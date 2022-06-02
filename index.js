@@ -15,6 +15,19 @@ const client = new Discord.Client({
   ],
 });
 
+const fetchMessagesFromAllGuilds = async () => {
+  const allGuilds = await client.guilds.cache;
+  let allChannels;
+  for (const guild of allGuilds) {
+    allChannels = await guild[1].channels.fetch();
+  }
+  for (const channel of allChannels) {
+    if (channel[1].type === "GUILD_TEXT") {
+      await channel[1].messages.fetch();
+    }
+  }
+};
+
 const createCreatorNftMessage = async (channelId, message) => {
   const embeddedData = {
     title: "Buy Riya's NFT to chat directly with her 😊",
@@ -36,6 +49,7 @@ const createCreatorNftMessage = async (channelId, message) => {
 };
 
 client.on("ready", async () => {
+  await fetchMessagesFromAllGuilds();
   console.log("Bot is online");
 });
 client.on("guildMemberAdd", (member) => {});
@@ -46,6 +60,7 @@ client.on("messageCreate", async (message) => {
 
   await createCreatorNftMessage(channelId, message);
 });
+
 client.on("messageReactionAdd", async (reaction) => {
   console.log("Reaction", reaction);
 });
