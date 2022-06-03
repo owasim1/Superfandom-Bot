@@ -1,6 +1,10 @@
 require("dotenv").config();
 const Discord = require("discord.js");
 
+const authorizationLink = (creatorName) => {
+  return `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${creatorName}`;
+};
+
 const client = new Discord.Client({
   allowedMentions: {
     parse: ["users", "roles"],
@@ -61,8 +65,10 @@ client.on("messageCreate", async (message) => {
   await createCreatorNftMessage(channelId, message);
 });
 
-client.on("messageReactionAdd", async (reaction) => {
-  console.log("Reaction", reaction);
+client.on("messageReactionAdd", async (reaction, user) => {
+  if (reaction.message.author.id === process.env.DISCORD_BOT_ID) {
+    await user.send(authorizationLink("riyasen"));
+  }
 });
 
 client.login(process.env.DISCORD_BOT_TOKEN);
