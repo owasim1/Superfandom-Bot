@@ -1,5 +1,8 @@
 require("dotenv").config();
 const Discord = require("discord.js");
+const axios = require("axios").default;
+const { connectToDatabase } = require("./utils/mongodb");
+const { ObjectId } = require("mongodb");
 
 const authorizationLink = (creatorName) => {
   return `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${creatorName}`;
@@ -59,10 +62,43 @@ client.on("ready", async () => {
 client.on("guildMemberAdd", (member) => {});
 
 client.on("messageCreate", async (message) => {
-  if (message.content !== "!welcome-message") return;
-  const channelId = message.channelId;
+  if (message.content === "!welcome-message") {
+    const channelId = message.channelId;
+    await createCreatorNftMessage(channelId, message);
+  }
+  console.log(message);
+  if (message.content.startsWith("!auth") && message.author.bot) {
+    const splitMessage = message.content.split(" ");
+    const superfandomUserId = splitMessage[1];
+    const roleToAssign = splitMessage[2];
+    const creatorUsername = splitMessage[3];
 
-  await createCreatorNftMessage(channelId, message);
+    const { db } = await connectToDatabase();
+
+    const findUser = await db
+      .collection("users")
+      .findOne({ _id: new ObjectId(superfandomUserId) });
+
+    if (!findUser) {
+      const err = {
+        status: false,
+        statusMsg: "No Superfandom user found using the given userID",
+      };
+      console.error(err);
+
+      return err;
+    }
+
+    const discordUserToken = findUser.linkedAccounts.discord;
+    console.log(discordUserToken);
+    const discordUser = axios.get("https://discord.com/api/v8/users/@me", {
+      headers: {
+        Authorization: `Bearer ${discordUserToken.access_token}`,
+      },
+    });
+
+    console.log(discordUser);
+  }
 });
 
 client.on("messageReactionAdd", async (reaction, user) => {
