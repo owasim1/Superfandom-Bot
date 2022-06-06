@@ -66,7 +66,6 @@ client.on("messageCreate", async (message) => {
     const channelId = message.channelId;
     await createCreatorNftMessage(channelId, message);
   }
-  console.log(message);
   if (message.content.startsWith("!auth") && message.author.bot) {
     const splitMessage = message.content.split(" ");
     const superfandomUserId = splitMessage[1];
@@ -90,14 +89,28 @@ client.on("messageCreate", async (message) => {
     }
 
     const discordUserToken = findUser.linkedAccounts.discord;
-    console.log(discordUserToken);
-    const discordUser = axios.get("https://discord.com/api/v8/users/@me", {
-      headers: {
-        Authorization: `Bearer ${discordUserToken.access_token}`,
-      },
-    });
+    const discordUser = await axios.get(
+      "https://discord.com/api/v8/users/@me",
+      {
+        headers: {
+          Authorization: `Bearer ${discordUserToken.access_token}`,
+        },
+      }
+    );
 
-    console.log(discordUser);
+    const currentGuild = await client.guilds.cache.find(
+      (guild) => guild.id === message.guildId
+    );
+
+    const currentGuildMember = await currentGuild.members.cache.find(
+      (user) => discordUser.data.id === user.id
+    );
+
+    const getRole = await currentGuild.roles.cache.find((role) =>
+      role.name.includes("Riya's Inner")
+    );
+    const assignRole = await currentGuildMember.roles.add(getRole);
+    console.log(assignRole);
   }
 });
 
