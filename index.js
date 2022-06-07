@@ -3,26 +3,9 @@ const Discord = require("discord.js");
 const axios = require("axios").default;
 const { connectToDatabase } = require("./utils/mongodb");
 const { ObjectId } = require("mongodb");
-
-const authorizationLink = (data) => {
-  const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${data}`;
-
-  const embedMessage = new Discord.MessageEmbed({
-    title: "Verify your account",
-    description:
-      "To verify your account through Superfandom, please click on the button below",
-  });
-  const messageButton = new Discord.MessageButton({
-    label: "Verify",
-    url: authLink,
-    style: "LINK",
-  });
-  const messageActionRow = new Discord.MessageActionRow({
-    components: [messageButton],
-  });
-
-  return { embeds: [embedMessage], components: [messageActionRow] };
-};
+const creatorWelcomeMessages = JSON.parse(
+  JSON.stringify(require("./creator-welcome-messages.json"))
+);
 
 const client = new Discord.Client({
   allowedMentions: {
@@ -51,23 +34,27 @@ const fetchMessagesFromAllGuilds = async () => {
   }
 };
 
-const createCreatorNftMessage = async (channelId, message) => {
-  const embeddedData = {
-    title: "Buy Riya's NFT to chat directly with her 😊",
-    description:
-      "To buy the NFT, go here: https://superfandom.io/nft/620e4d1b2f4adb8369619a4a",
-    image: {
-      url: "https://images-ext-2.discordapp.net/external/HQJD2ekgkhWjqNP-q02gyUBCsfTQvLMpXlb5TvAQGG8/https/cdn-longterm.mee6.xyz/plugins/embeds/images/976911670024757288/8e9e15fecefece255526546d06e19abb0c4236d65386afbf813999e4812b4d87.png?width=458&height=458",
-    },
-    footer: {
-      text: "In case you've already bought the NFT, react to this message",
-    },
-  };
+const createCreatorNftMessage = async (channelId, message, creatorUsername) => {
+  const embeddedData = creatorWelcomeMessages[creatorUsername]["embedMessage"];
+  //todo: send roles and creator username in token
+  const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${creatorUsername}`;
+
   const embeddedMessage = new Discord.MessageEmbed(embeddedData);
+  const messageButton = new Discord.MessageButton({
+    label: "Verify",
+    url: authLink,
+    style: "LINK",
+  });
+  const messageActionRow = new Discord.MessageActionRow({
+    components: [messageButton],
+  });
   const channel = await client.channels.cache.find(
     (channel) => channel.id === channelId
   );
-  channel.send({ embeds: [embeddedMessage] });
+
+  if (embeddedData) {
+    channel.send({ embeds: [embeddedMessage], components: [messageActionRow] });
+  }
   await message.delete();
 };
 
@@ -77,9 +64,11 @@ client.on("ready", async () => {
 });
 
 client.on("messageCreate", async (message) => {
-  if (message.content === "!welcome-message") {
+  if (message.content.startsWith("!welcome-message")) {
+    const splitMessage = message.content.split(" ");
+    const creatorUsername = splitMessage[1];
     const channelId = message.channelId;
-    await createCreatorNftMessage(channelId, message);
+    await createCreatorNftMessage(channelId, message, creatorUsername);
   }
   if (message.content.startsWith("!auth") && message.author.bot) {
     const splitMessage = message.content.split(" ");
@@ -124,12 +113,6 @@ client.on("messageCreate", async (message) => {
       (role) => role.id == roleId
     );
     await currentGuildMember.roles.add(getRole);
-  }
-});
-
-client.on("messageReactionAdd", async (reaction, user) => {
-  if (reaction.message.author.id === process.env.DISCORD_BOT_ID) {
-    await user.send(authorizationLink("riyasen"));
   }
 });
 

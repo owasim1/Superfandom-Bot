@@ -1,7 +1,7 @@
 const { MongoClient } = require("mongodb");
-require('dotenv').config()
+require("dotenv").config();
 
-const MONGODB_URI = process.env.MONGODB_URI ?? ""
+const MONGODB_URI = process.env.MONGODB_URI ?? "";
 const MONGODB_DB = process.env.MONGODB_DB ?? "";
 
 const opts = {
@@ -25,7 +25,6 @@ async function connectToDatabase() {
       clientToReturn = await clientPromise;
       db = await clientToReturn.db(MONGODB_DB);
     } else {
-      console.log("Db already initialized");
       clientToReturn = await clientPromise;
       db = await clientToReturn.db(MONGODB_DB);
     }

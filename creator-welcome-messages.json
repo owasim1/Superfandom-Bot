@@ -1,0 +1,24 @@
+{
+  "riyasen":{
+    "embedMessage":{
+      "title":"Buy Riya's NFT to chat directly with her 😊",
+      "description":"To buy the NFT, go here: https://superfandom.io/nft/620e4d1b2f4adb8369619a4a",
+      "image":{
+        "url":"https://images-ext-2.discordapp.net/external/HQJD2ekgkhWjqNP-q02gyUBCsfTQvLMpXlb5TvAQGG8/https/cdn-longterm.mee6.xyz/plugins/embeds/images/976911670024757288/8e9e15fecefece255526546d06e19abb0c4236d65386afbf813999e4812b4d87.png?width=458&height=458"
+      },
+      "footer":{
+        "text":"In case you've already bought the NFT, click on the verify button below"
+      }
+    },
+    "roles":[
+      {
+        "name":"Riya's Inner Circle",
+        "id":"979728147002056769"
+      },
+      {
+        "name":"Riya's Outer Circle",
+        "id":"979728147002056767"
+      }
+    ]
+  }
+}
