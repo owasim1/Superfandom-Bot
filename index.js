@@ -1,13 +1,10 @@
 require("dotenv").config();
-const jwt = require("jsonwebtoken");
 const Discord = require("discord.js");
 const axios = require("axios").default;
 const { connectToDatabase } = require("./utils/mongodb");
 const { ObjectId } = require("mongodb");
 
 const authorizationLink = (data) => {
-  const secretKey = process.env.PRIVATE_KEY;
-  const token = jwt.sign(data, secretKey);
   const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${data}`;
 
   const embedMessage = new Discord.MessageEmbed({
@@ -87,6 +84,7 @@ client.on("messageCreate", async (message) => {
   if (message.content.startsWith("!auth") && message.author.bot) {
     const splitMessage = message.content.split(" ");
     const superfandomUserId = splitMessage[1];
+    const roleId = splitMessage[2];
 
     const { db } = await connectToDatabase();
 
@@ -122,8 +120,8 @@ client.on("messageCreate", async (message) => {
       (user) => discordUser.data.id === user.id
     );
 
-    const getRole = await currentGuild.roles.cache.find((role) =>
-      role.name.includes("Riya's Inner")
+    const getRole = await currentGuild.roles.cache.find(
+      (role) => role.id == roleId
     );
     await currentGuildMember.roles.add(getRole);
   }
@@ -131,7 +129,6 @@ client.on("messageCreate", async (message) => {
 
 client.on("messageReactionAdd", async (reaction, user) => {
   if (reaction.message.author.id === process.env.DISCORD_BOT_ID) {
-    console.log(reaction.message);
     await user.send(authorizationLink("riyasen"));
   }
 });
