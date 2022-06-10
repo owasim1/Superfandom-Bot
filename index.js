@@ -40,16 +40,15 @@ const createCreatorNftMessage = async (channelId, message, creatorUsername) => {
   const embeddedData = creatorData["embedMessage"];
   const creatorRoles = creatorData["roles"];
   const creatorGuildId = creatorData["guildId"];
+  const creatorNftId = creatorData["nftId"];
 
   const payload = {
-    roles: creatorRoles,
-    guildId: creatorGuildId,
-    creatorUsername: creatorUsername,
+    0: [creatorRoles, creatorGuildId, creatorUsername, creatorNftId],
   };
-
   const token = jwt.sign(JSON.stringify(payload), process.env.PRIVATE_KEY);
 
-  const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${token}`;
+  const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=guilds%20email%20identify%20guilds.join&state=${token}`;
+  // const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=https%3A%2F%2Fdev-sf-webapp-ten.vercel.app%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${token}`;
 
   const embeddedMessage = new Discord.MessageEmbed(embeddedData);
   const messageButton = new Discord.MessageButton({
