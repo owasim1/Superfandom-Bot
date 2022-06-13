@@ -102,7 +102,9 @@ client.on("messageCreate", async (message) => {
       return err;
     }
 
-    const discordUserToken = findUser.linkedAccounts.discord;
+    const discordUserToken = findUser.linkedAccounts.find(
+      (account) => account.service === "discord"
+    );
     const discordUser = await axios.get(
       "https://discord.com/api/v8/users/@me",
       {
