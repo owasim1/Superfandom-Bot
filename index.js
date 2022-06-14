@@ -36,19 +36,25 @@ const fetchMessagesFromAllGuilds = async () => {
 };
 
 const createCreatorNftMessage = async (channelId, message, creatorUsername) => {
-  const creatorData = creatorWelcomeMessages[creatorUsername];
-  const embeddedData = creatorData["embedMessage"];
-  const creatorRoles = creatorData["roles"];
-  const creatorGuildId = creatorData["guildId"];
-  const creatorNftId = creatorData["nftId"];
+  const { db } = await connectToDatabase();
 
-  const payload = {
-    0: [creatorRoles, creatorGuildId, creatorUsername, creatorNftId],
-  };
-  const token = jwt.sign(JSON.stringify(payload), process.env.PRIVATE_KEY);
+  const creatorDiscordData =
+    (await db
+      .collection("discord-bot")
+      .findOne({ creatorSuperfandomUsername: creatorUsername })) ?? undefined;
 
-  const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=guilds%20email%20identify%20guilds.join&state=${token}`;
-  // const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=https%3A%2F%2Fdev-sf-webapp-ten.vercel.app%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${token}`;
+  if (!creatorDiscordData) {
+    const err = {
+      status: false,
+      statusMsg: "No creator discord data available for the username provided",
+    };
+    console.error(err);
+    return err;
+  }
+  const embeddedData = creatorDiscordData.embedMessage ?? undefined;
+
+  const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flink%2Fdiscord&response_type=code&scope=guilds%20email%20identify%20guilds.join&state=${creatorUsername}`;
+  // const authLink = `https://discord.com/api/oauth2/authorize?client_id=981498317714391091&redirect_uri=https%3A%2F%2Fdev-sf-webapp-ten.vercel.app%2Flink%2Fdiscord&response_type=code&scope=identify%20email%20guilds&state=${creatorUsername}`;
 
   const embeddedMessage = new Discord.MessageEmbed(embeddedData);
   const messageButton = new Discord.MessageButton({
